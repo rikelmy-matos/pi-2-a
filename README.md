@@ -21,20 +21,24 @@ Aplicacao de gerenciamento de contatos telefonicos desenvolvida em **Java 17** c
 ## Estrutura do Projeto
 
 ```
-src/main/java/com/pi/agenda/
-├── Application.java              # Ponto de entrada Spring Boot
-├── model/
-│   └── Contato.java              # Entidade JPA (tabela: contatos)
-├── repository/
-│   └── ContatoRepository.java    # Interface Spring Data JPA
-├── service/
-│   └── AgendaTelefonica.java     # Logica de negocio (CRUD)
-└── cli/
-    ├── DataSeeder.java           # Seeding inicial de contatos (@Order(1))
-    └── AgendaMenu.java           # Menu interativo CLI (@Order(2))
-
-src/main/resources/
-└── application.properties        # Configuracao do banco e JPA
+2-a/2-a/
+├── Dockerfile
+├── docker-compose.yml
+├── pom.xml
+└── src/main/
+    ├── java/com/pi/agenda/
+    │   ├── Application.java              # Ponto de entrada Spring Boot
+    │   ├── model/
+    │   │   └── Contato.java              # Entidade JPA (tabela: contatos)
+    │   ├── repository/
+    │   │   └── ContatoRepository.java    # Interface Spring Data JPA
+    │   ├── service/
+    │   │   └── AgendaTelefonica.java     # Logica de negocio (CRUD)
+    │   └── cli/
+    │       ├── DataSeeder.java           # Seeding inicial (@Order(1))
+    │       └── AgendaMenu.java           # Menu interativo CLI (@Order(2))
+    └── resources/
+        └── application.properties        # Configuracao do banco e JPA
 ```
 
 ---
@@ -60,6 +64,12 @@ Cada contato possui: **Nome** (unico, obrigatorio), **Telefone** (obrigatorio) e
 
 - [Docker](https://docs.docker.com/get-docker/) instalado
 - [Docker Compose](https://docs.docker.com/compose/) disponivel
+
+> **Todos os comandos abaixo devem ser executados dentro da pasta `2-a/2-a/`**, onde estao o `Dockerfile` e o `docker-compose.yml`.
+
+```bash
+cd 2-a/2-a
+```
 
 ---
 
@@ -91,10 +101,8 @@ O app vai:
 ### Opcao 2 — Banco no Docker, app local (desenvolvimento)
 
 ```bash
-# Sobe apenas o banco
+# Dentro de 2-a/2-a/
 docker compose up postgres -d
-
-# Roda o app localmente
 ./mvnw spring-boot:run
 ```
 
@@ -153,7 +161,7 @@ CREATE TABLE contatos (
 );
 ```
 
-Para exportar o dump do banco (entregavel):
+Para exportar o dump do banco (entregavel), dentro de `2-a/2-a/`:
 
 ```bash
 docker exec agenda_postgres pg_dump -U agenda_user agenda_db > dump.sql
