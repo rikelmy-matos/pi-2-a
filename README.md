@@ -34,7 +34,7 @@ Aplicacao de gerenciamento de contatos telefonicos desenvolvida em **Java 17** c
     │   │   └── ContatoRepository.java    # Interface Spring Data JPA
     │   ├── service/
     │   │   └── AgendaTelefonica.java     # Logica de negocio (CRUD)
-    │       └── cli/
+    │   └── cli/
     │       └── AgendaMenu.java           # Menu interativo CLI (CommandLineRunner)
     └── resources/
         └── application.properties        # Configuracao do banco e JPA
