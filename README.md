@@ -151,28 +151,6 @@ docker exec agenda_postgres pg_dump -U agenda_user agenda_db > dump.sql
 
 ---
 
-## Tratamento de Excecoes
-
-| Situacao                   | Comportamento                         |
-|----------------------------|---------------------------------------|
-| Campo obrigatorio vazio    | Repete o prompt ate preencher         |
-| Contato com nome duplicado | Exibe `[ERRO]`, retorna ao menu       |
-| Contato nao encontrado     | Exibe `[ERRO]`, retorna ao menu       |
-| Opcao de menu invalida     | Exibe `[AVISO]`, exibe menu novamente |
-
----
-
-## Boas Praticas Aplicadas
-
-- Separacao de camadas: **Model / Repository / Service / CLI**
-- **DAO Pattern** via Spring Data JPA
-- Transacoes declarativas com `@Transactional`
-- Logs via SLF4J / Logback (`@Slf4j`)
-- Variaveis de ambiente para configuracao sensivel (12-factor app)
-- Multi-stage Docker build (imagem runtime leve com JRE Alpine)
-
----
-
 ## Entrega Final
 
 - [x] Codigo-fonte Java
@@ -181,14 +159,3 @@ docker exec agenda_postgres pg_dump -U agenda_user agenda_db > dump.sql
 - [ ] Video demonstrativo do CRUD completo
 
 **Prazo:** 16/06/2026 ate 23:30
-
----
-
-## Referencias
-
-- Herbert Schildt — *Java: The Complete Reference*
-- Kathy Sierra — *Use a Cabeca! Java*
-- C. J. Date — *Introducao a Sistemas de Bancos de Dados*
-- [Spring Boot Docs](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/)
-- [Spring Data JPA Docs](https://docs.spring.io/spring-data/jpa/docs/current/reference/html/)
-- [Docker Compose Docs](https://docs.docker.com/compose/)
