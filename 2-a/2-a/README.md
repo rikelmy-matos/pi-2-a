@@ -30,11 +30,11 @@ src/main/java/com/pi/agenda/
 ├── service/
 │   └── AgendaTelefonica.java     # Logica de negocio (CRUD)
 └── cli/
-    └── AgendaMenu.java           # Menu interativo CLI (CommandLineRunner)
+    ├── DataSeeder.java           # Seeding inicial de contatos (@Order(1))
+    └── AgendaMenu.java           # Menu interativo CLI (@Order(2))
 
 src/main/resources/
-├── application.properties        # Configuracao do banco e JPA
-└── data.sql                      # Seeding inicial (5 contatos)
+└── application.properties        # Configuracao do banco e JPA
 ```
 
 ---
@@ -83,7 +83,7 @@ docker compose run --rm app
 O app vai:
 1. Conectar ao PostgreSQL (aguarda o healthcheck passar)
 2. Criar a tabela `contatos` automaticamente via Hibernate
-3. Inserir os 5 contatos de seed (`data.sql`)
+3. Inserir os 5 contatos de seed via `DataSeeder`
 4. Exibir o menu interativo no terminal
 
 ---
@@ -114,17 +114,17 @@ docker compose down -v
 
 ## Dados de Seed
 
-Na primeira execucao, o arquivo `data.sql` insere automaticamente 5 contatos de exemplo:
+Na primeira execucao, o `DataSeeder` insere automaticamente 5 contatos de exemplo:
 
-| Nome            | Telefone          | E-mail                   |
-|-----------------|-------------------|--------------------------|
-| Ana Souza       | (11) 91234-5678   | ana.souza@email.com      |
-| Bruno Lima      | (21) 98765-4321   | bruno.lima@email.com     |
-| Carla Mendes    | (31) 99876-5432   | carla.mendes@email.com   |
-| Diego Ferreira  | (41) 97654-3210   | —                        |
-| Eduarda Costa   | (51) 96543-2109   | eduarda.costa@email.com  |
+| Nome            | Telefone        | E-mail                  |
+|-----------------|-----------------|-------------------------|
+| Ana Souza       | (11) 91234-5678 | ana.souza@email.com     |
+| Bruno Lima      | (21) 98765-4321 | bruno.lima@email.com    |
+| Carla Mendes    | (31) 99876-5432 | carla.mendes@email.com  |
+| Diego Ferreira  | (41) 97654-3210 | —                       |
+| Eduarda Costa   | (51) 96543-2109 | eduarda.costa@email.com |
 
-O seed usa `ON CONFLICT DO NOTHING`, entao e seguro reexecutar sem duplicar registros.
+O seeding e idempotente: verifica se o contato ja existe antes de inserir, entao e seguro reexecutar sem duplicar registros.
 
 ---
 
@@ -180,7 +180,7 @@ docker exec agenda_postgres pg_dump -U agenda_user agenda_db > dump.sql
 - Logs via SLF4J / Logback (`@Slf4j`)
 - Variaveis de ambiente para configuracao sensivel (12-factor app)
 - Multi-stage Docker build (imagem runtime leve com JRE Alpine)
-- Seeding idempotente com `ON CONFLICT DO NOTHING`
+- Seeding programatico e idempotente via `DataSeeder`
 
 ---
 
