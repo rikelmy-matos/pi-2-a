@@ -6,15 +6,15 @@ Aplicacao de gerenciamento de contatos telefonicos desenvolvida em **Java 17** c
 
 ## Tecnologias
 
-| Camada          | Tecnologia                        |
-|-----------------|-----------------------------------|
-| Linguagem       | Java 17                           |
-| Framework       | Spring Boot 3.2.5                 |
-| Persistencia    | Spring Data JPA + Hibernate       |
-| Banco de Dados  | PostgreSQL 16 (Docker image)      |
-| Build           | Maven 3.9                         |
-| Reducao boilerplate | Lombok                        |
-| Containerizacao | Docker + Docker Compose           |
+| Camada              | Tecnologia                   |
+|---------------------|------------------------------|
+| Linguagem           | Java 17                      |
+| Framework           | Spring Boot 3.2.5            |
+| Persistencia        | Spring Data JPA + Hibernate  |
+| Banco de Dados      | PostgreSQL 16 (Docker image) |
+| Build               | Maven 3.9                    |
+| Reducao boilerplate | Lombok                       |
+| Containerizacao     | Docker + Docker Compose      |
 
 ---
 
@@ -22,31 +22,35 @@ Aplicacao de gerenciamento de contatos telefonicos desenvolvida em **Java 17** c
 
 ```
 src/main/java/com/pi/agenda/
-├── Application.java          # Ponto de entrada Spring Boot
+├── Application.java              # Ponto de entrada Spring Boot
 ├── model/
-│   └── Contato.java          # Entidade JPA (tabela: contatos)
+│   └── Contato.java              # Entidade JPA (tabela: contatos)
 ├── repository/
-│   └── ContatoRepository.java # Interface Spring Data JPA
+│   └── ContatoRepository.java    # Interface Spring Data JPA
 ├── service/
-│   └── AgendaTelefonica.java  # Logica de negocio (CRUD)
+│   └── AgendaTelefonica.java     # Logica de negocio (CRUD)
 └── cli/
-    └── AgendaMenu.java        # Menu interativo CLI (CommandLineRunner)
+    └── AgendaMenu.java           # Menu interativo CLI (CommandLineRunner)
+
+src/main/resources/
+├── application.properties        # Configuracao do banco e JPA
+└── data.sql                      # Seeding inicial (5 contatos)
 ```
 
 ---
 
 ## Funcionalidades (CRUD)
 
-| Opcao | Operacao | Descricao                              |
-|-------|----------|----------------------------------------|
-| 1     | Create   | Adicionar novo contato                 |
-| 2     | Delete   | Remover contato pelo nome              |
-| 3     | Read     | Buscar contato pelo nome               |
-| 4     | Update   | Atualizar telefone e/ou e-mail         |
-| 5     | Read All | Listar todos os contatos               |
-| 6     | —        | Sair do sistema                        |
+| Opcao | Operacao | Descricao                      |
+|-------|----------|--------------------------------|
+| 1     | Create   | Adicionar novo contato         |
+| 2     | Delete   | Remover contato pelo nome      |
+| 3     | Read     | Buscar contato pelo nome       |
+| 4     | Update   | Atualizar telefone e/ou e-mail |
+| 5     | Read All | Listar todos os contatos       |
+| 6     | —        | Sair do sistema                |
 
-Cada contato possui: **Nome** (unico), **Telefone** e **E-mail**.
+Cada contato possui: **Nome** (unico, obrigatorio), **Telefone** (obrigatorio) e **E-mail** (opcional).
 
 ---
 
@@ -57,77 +61,99 @@ Cada contato possui: **Nome** (unico), **Telefone** e **E-mail**.
 - [Docker](https://docs.docker.com/get-docker/) instalado
 - [Docker Compose](https://docs.docker.com/compose/) disponivel
 
-### Subir tudo com Docker Compose
+---
 
-```bash
-# Na pasta raiz do projeto (onde esta o docker-compose.yml)
-docker compose up --build
-```
+### Opcao 1 — Tudo via Docker (recomendado)
 
-O Docker Compose vai:
-1. Baixar a imagem `postgres:16-alpine`
-2. Criar o banco `agenda_db` com usuario/senha configurados
-3. Fazer o build da aplicacao Java
-4. Aguardar o PostgreSQL estar saudavel antes de iniciar o app
-5. Abrir o menu interativo no terminal
-
-> **Importante:** Como o app e interativo (CLI), execute com `stdin_open: true` e `tty: true` ja configurados. Para interagir, use:
-> ```bash
-> docker attach agenda_app
-> ```
-
-### Executar apenas o banco (desenvolvimento local)
+**Passo 1:** Sobe o PostgreSQL em background e faz o build da imagem:
 
 ```bash
 docker compose up postgres -d
+docker compose build app
 ```
 
-Em seguida, rode a aplicacao localmente:
+**Passo 2:** Roda o app de forma interativa (stdin conectado ao seu terminal):
 
 ```bash
+docker compose run --rm app
+```
+
+> `--rm` remove o container automaticamente ao sair (opcao 6 do menu).
+
+O app vai:
+1. Conectar ao PostgreSQL (aguarda o healthcheck passar)
+2. Criar a tabela `contatos` automaticamente via Hibernate
+3. Inserir os 5 contatos de seed (`data.sql`)
+4. Exibir o menu interativo no terminal
+
+---
+
+### Opcao 2 — Banco no Docker, app local (desenvolvimento)
+
+```bash
+# Sobe apenas o banco
+docker compose up postgres -d
+
+# Roda o app localmente
 ./mvnw spring-boot:run
 ```
 
-### Parar os containers
+---
+
+### Parar e limpar
 
 ```bash
+# Para o banco
 docker compose down
-```
 
-Para remover tambem o volume do banco:
-
-```bash
+# Para o banco e apaga os dados do volume
 docker compose down -v
 ```
 
 ---
 
+## Dados de Seed
+
+Na primeira execucao, o arquivo `data.sql` insere automaticamente 5 contatos de exemplo:
+
+| Nome            | Telefone          | E-mail                   |
+|-----------------|-------------------|--------------------------|
+| Ana Souza       | (11) 91234-5678   | ana.souza@email.com      |
+| Bruno Lima      | (21) 98765-4321   | bruno.lima@email.com     |
+| Carla Mendes    | (31) 99876-5432   | carla.mendes@email.com   |
+| Diego Ferreira  | (41) 97654-3210   | —                        |
+| Eduarda Costa   | (51) 96543-2109   | eduarda.costa@email.com  |
+
+O seed usa `ON CONFLICT DO NOTHING`, entao e seguro reexecutar sem duplicar registros.
+
+---
+
 ## Variaveis de Ambiente
 
-| Variavel   | Padrao       | Descricao              |
-|------------|--------------|------------------------|
-| `DB_HOST`  | `localhost`  | Host do PostgreSQL     |
-| `DB_PORT`  | `5432`       | Porta do PostgreSQL    |
-| `DB_NAME`  | `agenda_db`  | Nome do banco          |
-| `DB_USER`  | `agenda_user`| Usuario do banco       |
-| `DB_PASS`  | `agenda_pass`| Senha do banco         |
+| Variavel  | Padrao        | Descricao           |
+|-----------|---------------|---------------------|
+| `DB_HOST` | `localhost`   | Host do PostgreSQL  |
+| `DB_PORT` | `5432`        | Porta do PostgreSQL |
+| `DB_NAME` | `agenda_db`   | Nome do banco       |
+| `DB_USER` | `agenda_user` | Usuario do banco    |
+| `DB_PASS` | `agenda_pass` | Senha do banco      |
 
 ---
 
 ## Banco de Dados
 
-A tabela `contatos` e criada automaticamente pelo Hibernate (`ddl-auto=update`) na primeira execucao:
+A tabela e criada automaticamente pelo Hibernate (`ddl-auto=update`) na primeira execucao:
 
 ```sql
 CREATE TABLE contatos (
-    id       BIGSERIAL PRIMARY KEY,
+    id       BIGSERIAL    PRIMARY KEY,
     nome     VARCHAR(150) NOT NULL UNIQUE,
     telefone VARCHAR(20)  NOT NULL,
     email    VARCHAR(200)
 );
 ```
 
-Para exportar o dump do banco:
+Para exportar o dump do banco (entregavel):
 
 ```bash
 docker exec agenda_postgres pg_dump -U agenda_user agenda_db > dump.sql
@@ -137,20 +163,24 @@ docker exec agenda_postgres pg_dump -U agenda_user agenda_db > dump.sql
 
 ## Tratamento de Excecoes
 
-- Campo obrigatorio vazio: exibe aviso e pede novamente
-- Contato duplicado (mesmo nome): exibe mensagem de erro, nao interrompe o sistema
-- Contato nao encontrado: exibe mensagem informativa
+| Situacao                   | Comportamento                         |
+|----------------------------|---------------------------------------|
+| Campo obrigatorio vazio    | Repete o prompt ate preencher         |
+| Contato com nome duplicado | Exibe `[ERRO]`, retorna ao menu       |
+| Contato nao encontrado     | Exibe `[ERRO]`, retorna ao menu       |
+| Opcao de menu invalida     | Exibe `[AVISO]`, exibe menu novamente |
 
 ---
 
 ## Boas Praticas Aplicadas
 
 - Separacao de camadas: **Model / Repository / Service / CLI**
-- Uso de **DAO Pattern** via Spring Data JPA
-- **Transacoes** declarativas com `@Transactional`
-- **Logs** via SLF4J / Logback (`@Slf4j`)
-- Variaveis de ambiente para configuracao sensivel
-- Multi-stage Docker build (imagem final leve com JRE Alpine)
+- **DAO Pattern** via Spring Data JPA
+- Transacoes declarativas com `@Transactional`
+- Logs via SLF4J / Logback (`@Slf4j`)
+- Variaveis de ambiente para configuracao sensivel (12-factor app)
+- Multi-stage Docker build (imagem runtime leve com JRE Alpine)
+- Seeding idempotente com `ON CONFLICT DO NOTHING`
 
 ---
 
@@ -158,7 +188,7 @@ docker exec agenda_postgres pg_dump -U agenda_user agenda_db > dump.sql
 
 - [x] Codigo-fonte Java
 - [x] Banco de dados PostgreSQL via Docker
-- [ ] Dump do banco (`dump.sql`) — gerar apos execucao
+- [ ] Dump do banco (`dump.sql`) — gerar com o comando acima apos execucao
 - [ ] Video demonstrativo do CRUD completo
 
 **Prazo:** 16/06/2026 ate 23:30
@@ -172,3 +202,4 @@ docker exec agenda_postgres pg_dump -U agenda_user agenda_db > dump.sql
 - C. J. Date — *Introducao a Sistemas de Bancos de Dados*
 - [Spring Boot Docs](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/)
 - [Spring Data JPA Docs](https://docs.spring.io/spring-data/jpa/docs/current/reference/html/)
+- [Docker Compose Docs](https://docs.docker.com/compose/)
